@@ -1,0 +1,2 @@
+# COLLABORATIVE-CODE-SHARING-AND-RUNTIME-TESTING-PLATFORM
+Collaborative Code Sharing and Runtime Testing Platform is a browser-based IDE that supports real-time team coding using Socket.IO, chatbot communication with file sharing, and multi-language execution (Python, Java, JS, C/C++, React, SQL) via Piston API. It also includes package management and AI-based code suggestions and error explanations.
