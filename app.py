@@ -9,12 +9,6 @@ load_dotenv()
 from openai import OpenAI
 import os
 import os
-from pymongo import MongoClient
-
-MONGO_URI = os.getenv("MONGO_URI")
-
-client = MongoClient(MONGO_URI)
-db = client["student_collaboration_platform"]
 
 # Load API key from .env
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -79,9 +73,15 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 # -----------------------
 # MongoDB
 # -----------------------
+import os
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://localhost:27017/")
+MONGO_URI = os.getenv("MONGO_URI")
+
+if not MONGO_URI:
+    raise Exception("MONGO_URI environment variable not set in Render")
+
+client = MongoClient(MONGO_URI)
 db = client["code_collab"]
 
 project_packages_coll = db["project_packages"]
@@ -89,6 +89,7 @@ teams_coll = db.teams
 messages_coll = db.messages
 files_coll = db.files
 uploads_coll = db.uploads
+
 
 
 
