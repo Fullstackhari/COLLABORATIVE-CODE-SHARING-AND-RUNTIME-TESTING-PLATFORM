@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Team Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+
+<body class="dashboard-page">
+
+
+  <!-- TOP BAR -->
+  <div class="header-bar">
+    <span>Welcome {{ usn }}</span>
+
+
+
+    <div style="display:flex; gap:10px;">
+      <!-- NEW - Go back to Editor -->
+      <a href="/editor-home/{{ projectName }}/{{ usn }}">
+        <button class="top-btn">Go to Code Editor</button>
+      </a>
+
+      <!-- Logout -->
+      <a href="/">
+        <button class="top-btn logout">Logout</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- CHAT AREA -->
+<div class="chat-container">
+
+  <!-- Messages area -->
+  <div class="messages" id="messages">
+
+    {% for msg in messages %}
+      <div class="message-wrapper {{ 'sent-wrapper' if msg.sender == usn else 'received-wrapper' }}"
+           data-id="{{ msg._id }}"
+           data-sender="{{ msg.sender }}"
+           data-filename="{{ msg.filename }}">
+
+        <div class="sender-usn">{{ msg.sender }}</div>
+
+        <div class="chat-bubble 
+          {% if msg.filename == '(message only)' or msg.filename is none %}
+            {{ 'sent-text' if msg.sender == usn else 'received-text' }}
+          {% else %}
+            {{ 'sent-file' if msg.sender == usn else 'received-file' }}
+          {% endif %}">
+
+          {% if msg.filename != '(message only)' and msg.get('file_url') %}
+            <!-- File message (show filename + small download icon) -->
+            <div class="file-row">
+              <div class="file-name">{{ msg.filename }}</div>
+              <div class="msg-actions">
+
+                <!-- download (everyone) -->
+                <a class="action-icon" href="{{ msg.file_url }}" download title="Download">
+                  <img src="https://cdn-icons-png.flaticon.com/128/4208/4208397.png" alt="download">
+                </a>
+
+                <!-- delete (owner only, not deleted yet) -->
+                {% if msg.sender == usn and not msg.deleted %}
+                  <button class="action-icon action-delete" data-id="{{ msg._id }}" title="Delete">
+                    <img src="https://cdn-icons-png.flaticon.com/128/15015/15015989.png" alt="delete">
+                  </button>
+                {% endif %}
+
+              </div>
+            </div>
+
+          {% elif msg.filename != '(message only)' and not msg.get('file_url') %}
+            <!-- File recorded but no URL -->
+            <div class="file-row">
+              <div class="file-name">{{ msg.filename }}</div>
+              <div class="msg-actions">
+
+                {% if msg.sender == usn and not msg.deleted %}
+                  <button class="action-icon action-delete" data-id="{{ msg._id }}" title="Delete">
+                    <img src="https://cdn-icons-png.flaticon.com/128/15015/15015989.png" alt="delete">
+                  </button>
+                {% endif %}
+
+              </div>
+            </div>
+
+          {% else %}
+            <!-- Normal text message -->
+            <div class="text-row">
+              <div class="text-message">{{ msg.code }}</div>
+              <div class="msg-actions">
+
+                {% if msg.sender == usn and not msg.deleted %}
+                  <button class="action-icon action-delete" data-id="{{ msg._id }}" title="Delete">
+                    <img src="https://cdn-icons-png.flaticon.com/128/15015/15015989.png" alt="delete">
+                  </button>
+                {% endif %}
+
+              </div>
+            </div>
+
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+
+  </div>
+
+    <!-- Message Form -->
+    <form id="chatForm" action="/send_message" method="post" enctype="multipart/form-data" class="message-row" onsubmit="handleSend(event)">
+      <textarea id="messageBox" name="message" placeholder="Message..."></textarea>
+
+      <input type="file" name="codefile" accept=".zip,.pdf,.py,.js,.html,.css,.txt,.sql,.rb,.jpg,.jpeg,.png,.gif" id="fileInput" style="display:none;" onchange="handleFileSelection(event)">
+      <label for="fileInput" class="icon-btn">📎</label>
+
+      <button type="submit" class="send-btn">➤</button>
+
+      <input type="hidden" name="usn" value="{{ usn }}">
+      <input type="hidden" name="projectName" value="{{ projectName }}">
+    </form>
+  </div>
+
+<script>
+  const socket = io();
+  const PROJECT = "{{ projectName }}";
+
+  // join chat room
+  socket.emit('join', { projectName: PROJECT, language: "__chat" });
+
+  // receive message
+  socket.on("new_message", msg => appendMessage(msg, "{{ usn }}"));
+
+  // receive deletion event
+  socket.on("message_deleted", data => {
+    // data should include _id (string)
+    const id = data._id;
+    if (!id) return;
+    const el = document.querySelector(`.message-wrapper[data-id='${id}']`);
+    if (el) {
+      const bubble = el.querySelector('.chat-bubble');
+      if (bubble) {
+        bubble.innerHTML = '<div class="text-row"><div class="text-message">(This message was deleted)</div></div>';
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

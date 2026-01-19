@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login / Create Team</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    function toggleForm() {
+      document.getElementById('loginForm').classList.toggle('hidden');
+      document.getElementById('createForm').classList.toggle('hidden');
+    }
+  </script>
+</head>
+<body>
+  <div class="gradient-bg">
+    <div class="form-container">
+      <div class="form-card">
+
+        <!-- ░░░ LOGIN FORM ░░░ -->
+        <form id="loginForm" action="/login" method="POST" {% if create_error %}class="hidden"{% endif %}>
+          <h2>Login</h2>
+
+          <input type="text" name="projectName" placeholder="Project Name" required>
+          <input type="text" name="usn" placeholder="USN" required>
+
+          <!-- 🔥 LOGIN ERROR MESSAGE -->
+          {% if error %}
+          <p style="color:#ff4d4d; font-weight:bold; text-align:center; margin-bottom:10px;">
+            {{ error }}
+          </p>
+          {% endif %}
+
+          <button type="submit" class="primary-btn">Login</button>
+
+          <button type="button" onclick="toggleForm()" class="primary-btn create-team-btn">
+            Create Team
+          </button>
+        </form>
+
+
+        <!-- ░░░ CREATE TEAM FORM ░░░ -->
+        <form id="createForm" action="/create_team" method="POST" 
+              {% if not create_error %}class="hidden"{% endif %}>
+          <h2>Create Team</h2>
+
+          <input type="text" name="projectName" placeholder="Project Name" required>
+          <input type="text" name="usns" placeholder="USN 1 (required)" required>
+          <input type="text" name="usns" placeholder="USN 2 (required)" required>
+          <input type="text" name="usns" placeholder="USN 3 (required)" required>
+          <input type="text" name="usns" placeholder="USN 4 (required)" required>
+          <input type="text" name="usns" placeholder="USN 5 (optional)">
+
+          <!-- 🔥 CREATE TEAM ERROR MESSAGE -->
+          {% if create_error %}
+          <p style="color:#ff4d4d; font-weight:bold; text-align:center; margin-bottom:10px;">
+            {{ create_error }}
+          </p>
+          {% endif %}
+
+          <button type="submit" class="primary-btn">Submit Team</button>
+
+          <button type="button" onclick="toggleForm()" class="primary-btn back-to-login-btn">
+            Back to Login
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,969 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+
+  /* NEW — neon cyber background */
+  background: url('../img/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+
+  /* soft overlay to improve readability */
+  backdrop-filter: blur(0px);
+}
+
+
+.header-bar {
+  background: transparent !important;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white; /* Make welcome text visible */
+  font-weight: bold;
+  border: none; /* remove border */
+}
+
+
+.top-btn {
+  background: linear-gradient(to right, #9b59b6, #8e44ad);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 16px;
+  font-weight: bold;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.top-btn:hover {
+  background: linear-gradient(to right, #8e44ad, #9b59b6);
+}
+
+.logout {
+  background: #4f8af8;
+}
+
+.logout:hover {
+  background: #bd4c4c;
+}
+
+.chat-container {
+  width: 450px;                /* Increased width */
+  height: 550px;               /* Increased height */
+  margin: 40px auto;           /* Center nicely */
+  background: #1f1f24;         /* Darker clean background */
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 0 35px rgba(162, 82, 255, 0.4); /* neon glow */
+  display: flex;
+  flex-direction: column;
+}
+
+
+.messages {
+  height: 480px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow-anchor: none;
+}
+
+.chat-bubble {
+  margin: 6px 0;
+  padding: 8px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================
+   TEXT MESSAGE (WhatsApp)
+   ========================== */
+.chat-bubble.text-only {
+  max-width: 85%;
+  display: inline-block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ==========================
+   FILE MESSAGE (Compact)
+   ========================== */
+.chat-bubble.file-only {
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.sent {
+  background-color: #5fa1c3;
+  align-self: flex-end;
+}
+
+.received {
+  background-color: #f533b1;
+  align-self: flex-start;
+}
+
+.text-message {
+  text-align: left;
+}
+
+
+.file-message {
+  display: flex;
+  align-items: center; /* Keep this */
+  gap: 10px;
+  background-color: #86ebd3;;
+  padding: 8px 12px;
+  border-radius: 1px;
+  border: 1px solid black;
+  width: fit-content;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.file-icon {
+  font-size: 24px;
+  color: #9000ce;
+}
+
+.file-name {
+  font-weight: bold;
+  color: #8e44ad;
+  margin-bottom: 4px;
+}
+
+.copy-text {
+  font-size: 12px;
+  color: #8e44ad;
+  text-align: right;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.copy-text:hover {
+  text-decoration: underline;
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+  padding: 6px 0;
+}
+
+.message-row textarea {
+  flex: 1;
+  height: 40px;
+  resize: none;
+  padding: 10px 16px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  background-color: #f0f0f0;
+  font-size: 14px;
+}
+
+.message-row textarea:focus {
+  outline: none;
+  border-color: #a0a0a0;
+}
+
+.icon-btn, .send-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 16px;
+  border: none;
+  color: white;
+  background: linear-gradient(to right, #9b59b6, #8e44ad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.icon-btn:hover, .send-btn:hover {
+  background: linear-gradient(to right, #8e44ad, #9b59b6);
+}
+
+.send-btn {
+  margin-left: 10px;
+}
+
+.form-card {
+  width: 360px;
+  padding: 30px;
+
+  /* Glass look */
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 15px;
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  /* Glow border */
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+
+  text-align: center;
+
+  /* Animation */
+  animation: fadeSlideUp 0.8s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+
+.form-card h2 {
+  color: #ffffff;     /* White text */
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+
+.form-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.form-card input {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: white;
+}
+
+.form-card input::placeholder {
+  color: #f0eaff;
+}
+
+.form-card input:focus {
+  outline: none;
+  border-color: #a0a0a0;
+}
+
+.form-card button {
+  background: linear-gradient(90deg, #a64bf4, #7b2ff7);
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: bold;
+
+  box-shadow: 0 0 15px rgba(162, 82, 255, 0.4);
+  transition: 0.25s;
+}
+
+.form-card button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 25px rgba(162, 82, 255, 0.7);
+}
+
+
+.form-card button:hover {
+  background: linear-gradient(to right, #8e44ad, #9b59b6);
+}
+
+.hidden {
+  display: none;
+}
+
+.gradient-bg {
+  width: 100%;
+  height: 100vh;
+
+  /* Keep background image visible */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Subtle vignette for effect */
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column; /* Stack file name and copy button */
+  justify-content: center; /* Center them vertically within file-details */
+}
+
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+}
+
+.sent-wrapper {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.received-wrapper {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.sender-usn {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fffbfb;
+  margin-right: 8px;
+  margin-left: 8px;
+}
+
+/* Sent and Received Text Messages */
+.sent-text {
+  background-color: #5ec2f1; /* Green */
+  border-radius: 8px;
+  align-self: flex-end;
+}
+
+.received-text {
+  background-color: #db3cde; /* Sky Blue */
+  align-self: flex-start;
+  border-radius: 8px;
+}
+
+/* Sent and Received File Messages */
+.sent-file, .received-file {
+  background-color: rgb(172, 188, 189);  /* White for both sent and received files */
+  align-self: flex-end;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 1px;
+  border: 1px solid #141111;
+  border-radius: 5px;
+}
+
+.received-file {
+  align-self: flex-start;
+} 
+
+/* ---------- Tiny action icons (ant-sized) ---------- */
+
+.msg-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+/* action-icon is tiny button with very small image */
+.action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/* image inside icon scaled down (ant-sized) */
+.action-icon img {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+/* layout helpers for rows inside bubbles */
+.file-row, .text-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.file-row .file-name,
+.text-row .text-message {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+/* ensure chat bubble content doesn't overflow the container */
+.chat-bubble {
+  word-break: break-word;
+}
+
+/* make sure tiny icons don't change bubble height much */
+.chat-bubble .msg-actions {
+  margin-left: 10px;
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------
+   REMOVE BACKGROUND IMAGE FOR CHATBOT PAGE
+--------------------------------------------*/
+body.dashboard-page {
+    background: linear-gradient(135deg, #3b0066, #6a0dad, #8a2be2);
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+html.dashboard-page, 
+body.dashboard-page {
+    background: #1a1a1e !important; /* solid dark bg */
+    background-image: none !important;
+}
+
+body.dashboard-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px; /* prevents footer overlap */
+}
+
+
+/* -------------------------------------------
+   HEADER: Animation + White Text
+--------------------------------------------*/
+.header-bar {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.header-bar span {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    animation: slideDown 1s ease forwards;
+}
+
+/* Button animations */
+.top-btn {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.top-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+
+/* -------------------------------------------
+   CHAT CONTAINER STYLING (Enhanced)
+--------------------------------------------*/
+.chat-container {
+    background: rgba(20, 20, 20, 0.65);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 25px rgba(138, 43, 226, 0.4);
+    animation: fadeUp 0.8s ease forwards;
+}
+
+
+/* -------------------------------------------
+   MESSAGE BUBBLE ANIMATIONS
+--------------------------------------------*/
+.chat-bubble {
+    animation: popIn 0.3s ease-out;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.chat-bubble:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px rgba(162, 82, 255, 0.6);
+}
+
+
+/* -------------------------------------------
+   SEND AREA ENHANCEMENTS
+--------------------------------------------*/
+.message-row textarea {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.message-row textarea::placeholder {
+    color: #e8d7ff;
+}
+
+.icon-btn, .send-btn {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.icon-btn:hover, .send-btn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 12px rgba(162, 82, 255, 0.8);
+}
+
+
+/* -------------------------------------------
+   KEYFRAME ANIMATIONS
+--------------------------------------------*/
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------------------------
+   SELECT LANGUAGE PAGE THEME
+   Same style as chatbot page
+----------------------------*/
+
+/* Full-page background */
+.language-page {
+    background: #1b1a1a; /* same dark background as chatbot */
+    min-height: 100vh;
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Main heading */
+.language-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 40px;
+    text-shadow: 0 0 10px #b04aff;
+    animation: fadeInDown 0.7s ease;
+}
+
+/* Language grid */
+.language-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 250px);
+    gap: 40px;
+}
+
+/* Card style */
+.lang-card {
+    width: 150px;        /* smaller width */
+    height: 125px;       /* smaller height */
+    background: #963535;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 0 18px rgba(162, 82, 255, 0.25); /* purple glow */
+    transition: 0.25s ease;
+    text-decoration: none;
+    color: #fff;
+}
+
+.lang-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 0 25px rgba(162, 82, 255, 0.45);
+}
+
+.lang-card img {
+    width: 40px;   /* icon smaller */
+    height: 48px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.lang-card span {
+    font-size: 15px;  /* text slightly smaller */
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Prevent purple background flashing on editor screen */
+body.editor-screen {
+    background: #1e1e1e !important;   /* VSCode-like dark */
+    background-image: none !important;
+}
+
+/* -------------------------------------------------
+   DARK + NEON GLOW THEME - Editor & Controls (Version A)
+   Drop this into static/css/style.css (append or replace editor section)
+   ------------------------------------------------- */
+
+body.editor-screen {
+  background: #121217 !important; /* VSCode-like dark */
+  color: #e6e6e6;
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* TOP BAR */
+.top-bar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.6) inset;
+}
+
+/* Project + lang text */
+.top-bar > div:first-child {
+  font-weight: 600;
+  color: #f3f3f3;
+  letter-spacing: 0.2px;
+}
+
+/* Button base */
+.editor-btn, .small, .btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+/* Neutral small button (Change Language, Logout) */
+.editor-btn {
+  background: linear-gradient(135deg, #2f2f34, #242427);
+  color: #f6f6f6;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.editor-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 22px rgba(121,42,255,0.12);
+}
+
+/* Top-bar "small" style (for older refs) */
+.small {
+  background: linear-gradient(180deg, #e9eef5 0%, #d7e0ea 100%);
+  color: #222;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 7px 12px;
+  border-radius: 8px;
+}
+.small:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(120,120,180,0.10);
+}
+
+/* Return to Chatbot special (ensure label visible) */
+/* FIX: Return to Chatbot button invisible issue */
+.return-btn {
+    background: linear-gradient(135deg, #2f2f34, #242427) !important;
+    color: #f6f6f6 !important;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.return-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 22px rgba(121,42,255,0.18);
+}
+
+/* RUN / SHARE / ADD FILE / DELETE FILE Buttons (right panel) */
+.btn {
+  background: linear-gradient(135deg, #792aff, #5a16d8);
+  color: white;
+  box-shadow: 0 8px 30px rgba(121, 42, 255, 0.18);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 10px 34px rgba(150, 70, 255, 0.28),
+    0 4px 10px rgba(0,0,0,0.45) inset;
+}
+
+/* Run button distinct green on hover */
+#btnRun:hover {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  box-shadow:
+    0 10px 28px rgba(46, 204, 113, 0.18),
+    0 4px 8px rgba(0,0,0,0.4) inset;
+}
+
+/* Share button distinct blue hover */
+#btnShare:hover {
+  background: linear-gradient(135deg, #36a8ff, #0074cc);
+  box-shadow:
+    0 10px 28px rgba(54, 168, 255, 0.18),
+    0 4px 8px rgba(0,0,0,0.4) inset;
+}
+
+/* Delete style (use .delete-btn on the element in JS when appropriate) */
+.btn.delete-btn {
+  background: linear-gradient(135deg, #ff4b4b, #c92f2f) !important;
+}
+.btn.delete-btn:hover {
+  box-shadow:
+    0 10px 28px rgba(255,75,75,0.18),
+    0 4px 8px rgba(0,0,0,0.4) inset;
+}
+
+/* Tabs (file list) */
+.tabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  align-items: center;
+}
+.tab {
+  background: linear-gradient(180deg,#1f1f22,#151517);
+  color: #ddd;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.02);
+  transition: all .15s ease;
+}
+.tab:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,0.6); }
+.tab.active { background: linear-gradient(90deg,#8e44ad,#9b59b6); color:white; box-shadow: 0 6px 26px rgba(138,43,226,0.22);}
+
+/* Monaco editor container */
+#editor {
+  height: calc(100vh - 60px - 56px); /* keep editor tall but not overflow top-bar */
+  min-height: 420px;
+  background: #151515;
+  border-right: 1px solid rgba(255,255,255,0.02);
+}
+
+/* Right panel */
+.right {
+  width: 36%;
+  min-width: 320px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border-left: 1px solid rgba(255,255,255,0.02);
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+/* Output panel */
+#outputArea {
+  background: #0f1011;
+  color: #101212;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+}
+
+/* Preview iframe style */
+.preview-frame {
+  border: 1px solid rgba(255,255,255,0.03);
+  background: #0b0b0c;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+/* File input and actions */
+.file-input {
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: #121214;
+  color: #ddd;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+/* small helpers */
+.file-actions { display:flex; gap:10px; align-items:center; }
+
+/* subtle entrance animations */
+@keyframes neonFadeIn {
+  from { opacity: 0; transform: translateY(10px) scale(.995); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* FIX: Restore clean top bar look (no glow, no blur) */
+/* FIX — Make top bar text solid dark & readable */
+.top-bar {
+    background: #ffffff !important;
+}
+
+.top-bar strong,
+.top-bar small,
+.top-bar span,
+.top-bar div {
+    color: #222 !important;     /* solid black */
+    font-weight: 600 !important;
+}
+
+.login-error {
+    background: rgba(255, 0, 0, 0.18);
+    color: #ff6b6b;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid rgba(255,0,0,0.25);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.errorLineHighlight {
+    background: rgba(255,0,0,0.25) !important;
+    border-left: 4px solid red !important;
+}
+
+.package-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: #222;
+  color: #0f0;
+  font-family: monospace;
+  border-radius: 4px;
+}
+
+#packageManager {
+    border-top: 1px solid #ccc;
+    padding: 14px;
+    margin-top: 16px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #222; /* readable text */
+    border-radius: 8px;
+}
+
+/* Headings */
+#packageManager h3 {
+    color: #111;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* Labels */
+#packageManager label {
+    color: #222;
+    font-weight: 600;
+}
+
+/* Inputs & selector */
+#packageManager input,
+#packageManager select {
+    width: 100%;
+    margin: 6px 0;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: #fff;
+    color: #000;
+}
+
+/* Install Button */
+#packageManager button {
+    width: 100%;
+    padding: 10px;
+    background: #007acc;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+#packageManager button:hover {
+    background: #0060b8;
+}
+
+/* Installed packages */
+#installedPkgs {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+}
+#installedPkgs li {
+    background: #f4f4f4;
+    padding: 8px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    color: #000;
+    border: 1px solid #ddd;
+}
+
+.secondary-btn {
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-left: 6px;
+}
+.secondary-btn:hover {
+  background: #2563eb;
+}
+
+.file-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#tabsBar {
+  display: flex;
+  gap: 6px;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+

@@ -1,0 +1,404 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ language|upper }} Editor - {{ projectName }}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
+  <script>
+  require.config({
+    paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor/min/vs" }
+  });
+</script>
+
+  <style>
+  /* Global dark layout */
+  body, html {
+      height: 100%;
+      margin: 0;
+      background: #1f1f1f;
+      font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* ---------- TOP BAR (simple white) ---------- */
+  .top-bar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e5e5;
+      font-size: 15px;
+  }
+
+  .small {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #e8e8e8;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+  }
+
+  .small:hover {
+      background: #dcdcdc;
+  }
+
+  /* ---------- MAIN FLEX LAYOUT ---------- */
+  .editor-wrap {
+      display: flex;
+      height: calc(100vh - 56px);
+  }
+
+  /* Editor left side */
+  .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1e1e1e;
+  }
+
+  /* Tabs bar */
+  .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 8px 10px;
+      background: #262626;
+      border-bottom: 1px solid #333;
+      align-items: center;
+  }
+
+  .tab {
+      padding: 6px 12px;
+      background: #333;
+      color: #eee;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+  }
+
+  .tab:hover {
+      background: #3f3f3f;
+  }
+
+  .tab.active {
+      background: #7d3cff;
+      color: white;
+  }
+
+  #editor {
+      flex: 1;
+  }
+
+  /* ---------- RIGHT PANEL ---------- */
+  .right {
+      width: 38%;
+      min-width: 330px;
+      background: #f9f9f9;
+      border-left: 1px solid #ddd;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+  }
+
+  .controls {
+      display: flex;
+      gap: 10px;
+  }
+
+  .btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #7d3cff;
+      color: white;
+      font-size: 14px;
+  }
+
+  .btn:hover {
+      background: #692fce;
+  }
+
+  /* ---------- OUTPUT PANEL (Style B: Light Card) ---------- */
+  #outputArea {
+      margin-top: 14px;
+      background: white;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: Consolas, monospace;
+      white-space: pre-wrap;
+      box-shadow: 0px 3px 10px rgba(0,0,0,0.08);
+      border: 1px solid #e3e3e3;
+      height: 150px;
+      overflow-y: auto;
+      font-size: 14px;
+  }
+
+  /* HTML preview iframe */
+  .preview-frame {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-top: 12px;
+      flex: 1;
+      background: white;
+  }
+
+  .file-input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+  }
+
+  /* -----------------------------
+   EDITOR BUTTONS (Glow Style)
+------------------------------*/
+
+.small, .btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    outline: none;
+
+    /* smooth animation */
+    transition: 
+        background 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+/* TOP BAR SMALL BUTTONS */
+.small {
+    background: #2d2d2d;
+    color: #e8e8e8;
+    border: 1px solid #444;
+}
+
+.small:hover {
+    background: #3c3c3c;
+    transform: translateY(-3px);
+    box-shadow: 0 0 12px rgba(150, 150, 255, 0.35);
+}
+
+
+/* -------------------------------------------------
+   TOP BAR BUTTONS — INDIVIDUAL FIXES & ANIMATIONS
+--------------------------------------------------*/
+
+/* All top-bar buttons share same animation base */
+.top-bar .small {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+</style>
+
+</head>
+<body class="editor-screen">
+
+
+<!-- ░░░ TOP BAR ░░░ -->
+<div class="top-bar">
+  <div>
+    <strong>Project:</strong> {{ projectName }} 
+    &nbsp; <small>|</small> &nbsp;
+    <strong>Lang:</strong> {{ language|upper }}
+  </div>
+
+   <div style="display:flex; gap:10px; align-items:center;">
+
+    <a href="/editor-home/{{ projectName }}/{{ usn }}">
+      <button class="editor-btn">Change Language</button>
+    </a>
+
+    <a href="/chatbot/{{ projectName }}/{{ usn }}">
+      <button class="editor-btn return-btn">Return to Chatbot</button>
+    </a>
+
+    <a href="/">
+      <button class="editor-btn">Logout</button>
+    </a>
+
+  </div>
+
+</div>
+
+<!-- ░░░ MAIN EDITOR LAYOUT ░░░ -->
+<div class="editor-wrap">
+  <div class="left">
+
+    <!-- TABS BAR -->
+    <div class="tabs" id="tabsBar">
+  <div class="file-actions">
+
+    <input id="newFileName" class="file-input" placeholder="new-file.py" />
+
+    <button id="btnNewFile" class="btn">Add File</button>
+
+    <!-- ✅ OPEN FILE BUTTON (beside Add File) -->
+    <button id="openFileBtn" class="btn">Open File</button>
+
+    <button id="btnDeleteFile" class="btn danger">Delete File</button>
+
+    <!-- ✅ Hidden file picker -->
+    <input
+      type="file"
+      id="openFileInput"
+      style="display:none"
+      multiple
+    />
+
+  </div>
+</div>
+
+
+
+    <!-- Monaco Editor -->
+    <div id="editor"></div>
+  </div>
+
+  <!-- RIGHT PANEL: RUN + OUTPUT + PREVIEW -->
+  <div class="right">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="controls">
+        <button id="btnRun" class="btn">Run ▶</button>
+        <button id="btnShare" class="btn" style="background:#3498db;">Share 📤</button>
+
+
+      </div>
+    </div>
+
+    <div id="outputArea"
+         style="margin-top:12px; font-family:monospace; white-space:pre-wrap; background:#fafafa; padding:12px; height:120px; overflow:auto;">
+      Output panel
+    </div>
+    <div id="packageManager" class="panel">
+  <h3>📦 Packages Manager</h3>
+  <label>Language</label>
+  <select id="pkgLang">
+    <option value="python">Python</option>
+    <option value="javascript">JavaScript</option>
+    <option value="java">Java</option>
+    <option value="c">C</option>
+    <option value="cpp">C++</option>
+    <option value="ruby">Ruby</option>
+    <option value="nosql">NoSQL</option>
+    <option value="react">React</option>
+  </select>
+
+  <label>Package Name</label>
+  <select id="pkgSelect"></select>
+
+  <button id="btnInstallPkg">Install</button>
+
+  <h4>Installed Packages</h4>
+  <ul id="installedPkgs"></ul>
+</div>
+
+</div>
+
+<style>
+#packageManager {
+    border-top: 1px solid #141212;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #eee;
+}
+#packageManager input, #packageManager select {
+    width: 100%;
+    margin: 4px 0;
+    padding: 6px;
+}
+#packageManager button {
+    width: 100%;
+    padding: 6px;
+    margin-top: 6px;
+    background: #00a8ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#packageManager button:hover {
+    background: #007acc;
+}
+#installedPkgs {
+    list-style: none;
+    padding-left: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+#installedPkgs li {
+    padding: 4px;
+    border-bottom: 1px solid #555;
+
+}
+.terminal-bar {
+    display: none !important;
+}
+
+</style>
+
+    <div class="terminal-bar">
+      <input id="terminalInput" placeholder="> pip install pandas" />
+      <button id="terminalRun">Run</button>
+    </div>
+
+    <div id="aiExplanation"
+     style="margin-top:12px; padding:12px; background:#fff3e0; border-radius:8px;
+            border:1px solid #ffcc80; font-family:sans-serif; display:none;">
+    </div>
+
+
+    <iframe id="preview" class="preview-frame" style="display:none;"></iframe>
+
+    <div style="margin-top:10px">
+      <small></small>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ GLOBAL VARIABLES FOR JS ░░░ -->
+<script>
+  window.PROJECT = "{{ projectName }}";
+  window.USER = "{{ usn }}";
+  window.LANGUAGE = "{{ language }}";
+</script>
+<script>
+ window.MonacoEnvironment = {
+  getWorkerUrl: function (_, label) {
+    if (label === "json") return "/static/js/monaco/json.worker.js";
+    if (label === "css") return "/static/js/monaco/css.worker.js";
+    if (label === "html") return "/static/js/monaco/html.worker.js";
+    if (label === "javascript") return "/static/js/monaco/js.worker.js";
+    if (label === "typescript") return "/static/js/monaco/typescript.worker.js";
+
+    return "/static/js/monaco/editor.worker.js";
+  }
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/loader.js"></script>
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+
+<script src="/static/js/monaco/lsp/lsp-init.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Language</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+/* ---------- FULL PAGE BACKGROUND (same as chatbot) ----------- */
+body {
+    background: #646467; /* deep dark purple/black */
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+
+    background: radial-gradient(circle at top, #3a0ca3 0%, #1a1a2e 40%, #0f0f16 100%);
+}
+
+/* ---------- CONTAINER ---------- */
+.container {
+    width: 100%;
+    max-width: 1250px;
+    text-align: center;
+    padding-top: 60px;
+    animation: fadeIn 0.8s ease;
+}
+
+h2 {
+    margin-bottom: 35px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(180, 60, 255, 0.8);
+}
+
+/* ---------- GRID ---------- */
+.grid-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px 40px;
+    justify-items: center;
+    padding: 20px;
+}
+
+/* ---------- LANGUAGE CARDS (neon-glow glass look) ---------- */
+.lang-card {
+    width: 180px;
+    height: 135px;
+    background: rgba(102, 94, 94, 0.06); /* frosted glass */
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    backdrop-filter: blur(8px);
+    text-decoration: none;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 rgba(128, 0, 255, 0);
+
+    transition: 0.35s ease;
+    cursor: pointer;
+}
+
+/* Hover Glow */
+.lang-card:hover {
+    transform: translateY(-10px) scale(1.06);
+    border-color: rgba(185, 60, 255, 0.6);
+    box-shadow:
+        0 0 15px rgba(185, 60, 255, 0.7),
+        0 0 30px rgba(185, 60, 255, 0.5);
+}
+
+/* Icon */
+.lang-card img {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 12px;
+}
+
+/* Text */
+.lang-card span {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+</style>
+
+</head>
+
+<body class="language-page">
+
+<div class="container">
+
+    <h2>SELECT LANGUAGE/LIBRARY</h2>
+
+    <div class="grid-box">
+
+        {% set ICON_URLS = {
+            "html":  "https://cdn-icons-png.flaticon.com/128/1051/1051277.png",
+            "react":   "https://cdn-icons-png.flaticon.com/128/3459/3459528.png",
+            "javascript": "https://cdn-icons-png.flaticon.com/128/1199/1199124.png",
+            "python": "https://cdn-icons-png.flaticon.com/128/5968/5968350.png",
+            "java":  "https://cdn-icons-png.flaticon.com/128/5968/5968282.png",
+            "cpp":   "https://cdn-icons-png.flaticon.com/128/6132/6132222.png",
+            "c":     "https://cdn-icons-png.flaticon.com/128/3665/3665923.png",
+            "ruby":  "https://cdn-icons-png.flaticon.com/128/919/919842.png",
+            "msql":  "https://cdn-icons-png.flaticon.com/128/15484/15484291.png"
+        } %}
+
+        {% for lang in languages %}
+        <a class="lang-card"
+           href="/editor/{{projectName}}/{{usn}}/{{lang}}">
+            <img src="{{ ICON_URLS[lang] }}">
+            <span>{{ lang.upper() }}</span>
+        </a>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
