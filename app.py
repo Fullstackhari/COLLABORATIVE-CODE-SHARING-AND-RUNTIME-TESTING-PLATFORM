@@ -8,6 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 from openai import OpenAI
 import os
+import os
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI")
+
+client = MongoClient(MONGO_URI)
+db = client["student_collaboration_platform"]
 
 # Load API key from .env
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
