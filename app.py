@@ -42,8 +42,8 @@ DEFAULT_ALLOWED_PACKAGES = {
 # -----------------------
 # JDoodle credentials
 # -----------------------
-CLIENT_ID = "442fe1723d5731111b7549a825ce3655"
-CLIENT_SECRET = "3228b45aeb6447df58a2309d2d630a7b53c6f69f60847e9a728d3b3b3e840583"
+CLIENT_ID = "YOUR_CLIENT_ID"
+CLIENT_SECRET = "YOUR_CLIENT_SECRET_KEY"
 
 # -----------------------
 # LANGUAGE ICONS
