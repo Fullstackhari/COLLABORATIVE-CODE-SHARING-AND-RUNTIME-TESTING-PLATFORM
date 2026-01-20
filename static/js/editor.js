@@ -1,22 +1,8 @@
 // static/js/editor.js
 // OneCompiler-style editor with tabs + Monaco + SocketIO collaboration
-const socket = io();
 
-
-window.MonacoEnvironment = {
-  getWorkerUrl: function (_, label) {
-    if (label === "json") return "/static/js/monaco/json.worker.js";
-    if (label === "css") return "/static/js/monaco/css.worker.js";
-    if (label === "html") return "/static/js/monaco/html.worker.js";
-    if (label === "javascript") return "/static/js/monaco/js.worker.js";
-    if (label === "typescript") return "/static/js/monaco/typescript.worker.js";
-
-    return "/static/js/monaco/editor.worker.js";
-  }
-};
-
-// load Monaco
-require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor/min/vs" } });
+// ✅ Force websocket for faster communication (prevents slow polling on cloud)
+const socket = io({ transports: ["websocket"] });
 
 let editor; // monaco editor instance
 let currentFile = null;
@@ -30,10 +16,32 @@ const outputArea = document.getElementById("outputArea");
 const btnRun = document.getElementById("btnRun");
 const newFileNameInput = document.getElementById("newFileName");
 
+// ✅ Open file elements (already in editor.html)
+const openFileBtn = document.getElementById("openFileBtn");
+const openFileInput = document.getElementById("openFileInput");
+
+
+// ✅ Monaco workers config
+window.MonacoEnvironment = {
+  getWorkerUrl: function (_, label) {
+    if (label === "json") return "/static/js/monaco/json.worker.js";
+    if (label === "css") return "/static/js/monaco/css.worker.js";
+    if (label === "html") return "/static/js/monaco/html.worker.js";
+    if (label === "javascript") return "/static/js/monaco/js.worker.js";
+    if (label === "typescript") return "/static/js/monaco/typescript.worker.js";
+    return "/static/js/monaco/editor.worker.js";
+  }
+};
+
+// ✅ Match Monaco version with editor.html (0.43.0)
+require.config({
+  paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs" }
+});
+
+
 // -----------------------------
 // 📦 PACKAGE MANAGER FRONTEND
 // -----------------------------
-
 const ALLOWED_PACKAGES = {
   python: [
     "numpy", "pandas", "matplotlib", "scikit-learn", "tensorflow",
@@ -51,32 +59,21 @@ const ALLOWED_PACKAGES = {
     "spring-boot-starter-data-jpa",
     "mysql-connector-java"
   ],
-  c: [
-    "glibc", "openssl", "libcurl", "pthread"
-  ],
-  cpp: [
-    "boost", "eigen", "opencv", "fmt", "spdlog"
-  ],
-  react: [
-    "react", "react-dom", "react-router-dom",
-    "axios", "redux", "react-query"
-  ],
-  nosql: [
-    "pymongo", "mongoose", "redis", "motor"
-  ]
+  c: ["glibc", "openssl", "libcurl", "pthread"],
+  cpp: ["boost", "eigen", "opencv", "fmt", "spdlog"],
+  react: ["react", "react-dom", "react-router-dom", "axios", "redux", "react-query"],
+  nosql: ["pymongo", "mongoose", "redis", "motor"]
 };
 
 const pkgLangSelect = document.getElementById("pkgLang");
 const pkgSelect = document.getElementById("pkgSelect");
 const installedPkgsList = document.getElementById("installedPkgs");
+const btnInstallPkg = document.getElementById("btnInstallPkg");
 
-// Update dropdown when language changes
 function updatePackageDropdown() {
   if (!pkgLangSelect || !pkgSelect) return;
-
   const lang = pkgLangSelect.value.toLowerCase();
   const packages = ALLOWED_PACKAGES[lang] || [];
-
   pkgSelect.innerHTML = "";
   packages.forEach((pkg) => {
     const opt = document.createElement("option");
@@ -86,14 +83,13 @@ function updatePackageDropdown() {
   });
 }
 
-// Load installed packages from backend for selected language
 async function refreshInstalledPackages() {
   if (!installedPkgsList || !pkgLangSelect) return;
 
   const res = await fetch("/api/list_packages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ projectName: window.PROJECT })
+    body: JSON.stringify({ projectName: project })
   });
 
   const data = await res.json();
@@ -109,8 +105,6 @@ async function refreshInstalledPackages() {
   });
 }
 
-// Install clicked
-const btnInstallPkg = document.getElementById("btnInstallPkg");
 if (btnInstallPkg) {
   btnInstallPkg.addEventListener("click", async () => {
     if (!pkgLangSelect || !pkgSelect) return;
@@ -118,16 +112,13 @@ if (btnInstallPkg) {
     const pkgLang = pkgLangSelect.value;
     const pkg = pkgSelect.value;
 
-    if (!pkg) {
-      alert("Select a package");
-      return;
-    }
+    if (!pkg) return alert("Select a package");
 
     const res = await fetch("/api/install_pkg", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        projectName: window.PROJECT,
+        projectName: project,
         language: pkgLang,
         package: pkg
       })
@@ -135,35 +126,32 @@ if (btnInstallPkg) {
 
     const result = await res.json();
     outputArea.textContent = result.output || result.error || "";
-
     refreshInstalledPackages();
   });
 }
 
-// Initialize package manager after DOM ready
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   if (pkgLangSelect) {
-    // If current editor language exists in dropdown, select it
     const hasOption = Array.from(pkgLangSelect.options).some(
       (opt) => opt.value.toLowerCase() === language
     );
-    if (hasOption) {
-      pkgLangSelect.value = language;
-    }
+    if (hasOption) pkgLangSelect.value = language;
 
     updatePackageDropdown();
     refreshInstalledPackages();
+
+    pkgLangSelect.addEventListener("change", () => {
+      updatePackageDropdown();
+      refreshInstalledPackages();
+    });
   }
-}); 
+});
+
 
 // ===============================
 // 📂 OPEN FILE (VS Code–like)
 // ===============================
-const openFileBtn = document.getElementById("openFileBtn");
-const openFileInput = document.getElementById("openFileInput");
-
 if (openFileBtn && openFileInput) {
-
   openFileBtn.addEventListener("click", () => {
     openFileInput.click();
   });
@@ -172,54 +160,45 @@ if (openFileBtn && openFileInput) {
     const selectedFiles = Array.from(e.target.files);
     if (!selectedFiles.length) return;
 
-    selectedFiles.forEach(file => {
+    selectedFiles.forEach((file) => {
       const reader = new FileReader();
-
       reader.onload = () => {
         const code = reader.result;
         const filename = file.name;
 
-        // prevent duplicates
-        if (files.some(f => f.filename === filename)) {
+        // Prevent duplicates
+        if (files.some((f) => f.filename === filename)) {
           selectFile(filename);
           return;
         }
 
-        // 🔥 Add file locally
+        // Add file locally
         files.push({ filename, code });
 
-        // 🔥 Render tab + select file
-        renderTabs();
-        selectFile(filename);
-
-        // (optional) broadcast to teammates
+        // Sync with collaborators
         socket.emit("create_file", {
           projectName: project,
           language: language,
           filename: filename,
           code: code
         });
-      };
 
+        renderTabs();
+        selectFile(filename);
+      };
       reader.readAsText(file);
     });
 
-    // reset input
     openFileInput.value = "";
   });
 }
 
 
 // -----------------------------
-// AI Inline Completion (Copilot-style)
+// Monaco setup
 // -----------------------------
-
-function setModeOptions(lang) {
-  // Not needed for Piston run — Monaco mode auto-detects on tab change
-}
-
 require(["vs/editor/editor.main"], function () {
-  // --- Enable JSX / TSX IntelliSense for React ---
+  // React JSX support
   monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
     jsx: monaco.languages.typescript.JsxEmit.React,
     allowSyntheticDefaultImports: true,
@@ -230,69 +209,6 @@ require(["vs/editor/editor.main"], function () {
     noEmit: true
   });
 
-  // 🚀 AI Inline Ghost Autocomplete
-  let aiDisabled = false;
-  let lastCompletion = "";
-
-  monaco.languages.registerInlineCompletionsProvider("javascript", {
-    provideInlineCompletions: async (model, position) => {
-      if (aiDisabled) return { items: [] };
-
-      const code = model.getValue();
-      if (!code.trim()) return { items: [] };
-
-      const prefix = model.getValueInRange({
-        startLineNumber: position.lineNumber,
-        startColumn: 1,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column
-      });
-
-      try {
-        const res = await fetch("/api/ai_complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, prefix })
-        });
-
-        if (!res.ok) {
-          aiDisabled = true;
-          console.warn("⚠️ AI disabled due to server error");
-          return { items: [] };
-        }
-
-        const data = await res.json();
-        const suggestion = (data.completion || "").trim();
-
-        if (!suggestion || suggestion === lastCompletion) return { items: [] };
-        lastCompletion = suggestion;
-
-        return {
-          items: [
-            {
-              text: suggestion,
-              range: new monaco.Range(
-                position.lineNumber,
-                position.column,
-                position.lineNumber,
-                position.column
-              )
-            }
-          ]
-        };
-      } catch (e) {
-        aiDisabled = true;
-        console.error("AI error:", e);
-        return { items: [] };
-      }
-    },
-    handleItemDidShow: () => {},
-    freeInlineCompletions: () => {}
-  });
-
-  // -------------------------
-  // Monaco editor setup
-  // -------------------------
   editor = monaco.editor.create(document.getElementById("editor"), {
     value: "",
     language: "javascript",
@@ -300,11 +216,10 @@ require(["vs/editor/editor.main"], function () {
     automaticLayout: true,
     fontSize: 14,
     minimap: { enabled: true },
-    glyphMargin: true,
     folding: true
   });
 
-  // Disable TS/JS diagnostics (squiggles)
+  // disable heavy squiggle diagnostics
   monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
     noSemanticValidation: true,
     noSyntaxValidation: true
@@ -315,87 +230,43 @@ require(["vs/editor/editor.main"], function () {
     noSyntaxValidation: true
   });
 
-  if (window.setupJsxIntellisense) {
-    window.setupJsxIntellisense(monaco);
-  }
-
-  // INIT LSP FOR MODEL (Python, Java, C/C++)
-  monaco.editor.onDidCreateModel((model) => {
-    window.initLspForModel(model);
-  });
-
-  fetch("/static/js/monaco/python-lsp.wasm")
-    .then((res) => res.arrayBuffer())
-    .then((wasm) => {
-      monaco.languages.register({ id: "python" });
-
-      MonacoLanguageClient.create({
-        languageId: "python",
-        wasmBinary: wasm
-      });
-    });
-
-  fetch("/static/js/monaco/clangd.wasm")
-    .then((r) => r.arrayBuffer())
-    .then((wasm) => {
-      MonacoLanguageClient.create({
-        languageId: "cpp",
-        wasmBinary: wasm
-      });
-    });
-
-  fetch("/static/js/monaco/java-lsp.wasm")
-    .then((r) => r.arrayBuffer())
-    .then((wasm) => {
-      MonacoLanguageClient.create({
-        languageId: "java",
-        wasmBinary: wasm
-      });
-    });
-
-  // 🔥 Disable syntax errors for non-JS languages
-  monaco.editor.onDidCreateModel((model) => {
-    const langId = model.getLanguageId();
-    if (langId !== "javascript" && langId !== "typescript") {
-      monaco.editor.setModelMarkers(model, "owner", []);
-      model.onDidChangeContent(() => {
-        monaco.editor.setModelMarkers(model, "owner", []);
-      });
-    }
-  });
-
-  if (language === "react") {
-    monaco.editor.setModelLanguage(editor.getModel(), "javascript");
-  }
-
-  // join room
+  // ✅ JOIN ROOM ONLY ONCE (FIX)
   socket.emit("join", { projectName: project, language: language });
 
+  // ✅ file list only once (FIX)
   socket.on("file_list", (payload) => {
-    files = payload.files || payload;
+    files = payload.files || payload || [];
     renderTabs();
     if (!currentFile && files.length) selectFile(files[0].filename);
   });
 
+  // ✅ code update only once (FIX)
   socket.on("code_update", (payload) => {
     if (payload.projectName !== project || payload.language !== language) return;
+
+    // Update editor view only for current file
     if (currentFile === payload.filename && editor.getValue() !== payload.code) {
       const pos = editor.getPosition();
       editor.setValue(payload.code);
       if (pos) editor.setPosition(pos);
     }
+
+    // Update local file cache
     const idx = files.findIndex((f) => f.filename === payload.filename);
     if (idx !== -1) files[idx].code = payload.code;
   });
 
+  // Debounced content sync
   let changeTimer = null;
   editor.onDidChangeModelContent(() => {
     if (!currentFile) return;
     if (changeTimer) clearTimeout(changeTimer);
+
     changeTimer = setTimeout(() => {
       const code = editor.getValue();
       const idx = files.findIndex((f) => f.filename === currentFile);
       if (idx !== -1) files[idx].code = code;
+
       socket.emit("code_update", {
         projectName: project,
         language: language,
@@ -405,51 +276,52 @@ require(["vs/editor/editor.main"], function () {
     }, 250);
   });
 
-  btnRun.addEventListener("click", runCode);
-  const btnShare = document.getElementById("btnShare");
-  btnShare?.addEventListener("click", shareFile);
+  btnRun?.addEventListener("click", runCode);
+  document.getElementById("btnShare")?.addEventListener("click", shareFile);
 
   document.getElementById("btnNewFile")?.addEventListener("click", () => {
     const name = newFileNameInput.value.trim();
     if (!name) return alert("Enter a filename (e.g. app.py)");
     if (files.some((f) => f.filename === name)) return alert("File already exists");
+
     socket.emit("create_file", {
       projectName: project,
       language: language,
       filename: name,
       code: ""
     });
+
     newFileNameInput.value = "";
+  });
+
+  // ✅ Delete button from editor.html
+  document.getElementById("btnDeleteFile")?.addEventListener("click", () => {
+    if (!currentFile) return alert("Select file first");
+    if (!confirm("Delete " + currentFile + " ?")) return;
+
+    const deletedFile = currentFile;
+
+    socket.emit("delete_file", {
+      projectName: project,
+      language: language,
+      filename: deletedFile
+    });
+
+    files = files.filter((f) => f.filename !== deletedFile);
+    currentFile = null;
+
+    // Clear editor
+    const emptyModel = monaco.editor.createModel("", "plaintext");
+    editor.setModel(emptyModel);
+
+    renderTabs();
   });
 });
 
-// join room (safety duplicate)
-socket.emit("join", { projectName: project, language: language });
 
-socket.on("file_list", (payload) => {
-  files = payload.files || payload;
-  renderTabs();
-
-  setTimeout(() => {
-    if (!currentFile && files.length > 0) {
-      selectFile(files[0].filename);
-      editor.layout();
-    }
-  }, 100);
-});
-
-socket.on("code_update", (payload) => {
-  if (payload.projectName !== project || payload.language !== language) return;
-  if (currentFile === payload.filename && editor.getValue() !== payload.code) {
-    const pos = editor.getPosition();
-    editor.setValue(payload.code);
-    if (pos) editor.setPosition(pos);
-  }
-  const idx = files.findIndex((f) => f.filename === payload.filename);
-  if (idx !== -1) files[idx].code = payload.code;
-});
-
-// helper to render tab bar
+// -----------------------------
+// Tabs rendering
+// -----------------------------
 function renderTabs() {
   while (tabsBar.firstChild) tabsBar.removeChild(tabsBar.firstChild);
 
@@ -477,125 +349,6 @@ function renderTabs() {
 
     tabsBar.appendChild(d);
   });
-  // Hidden file input for Open File
-// ---------- Open File Input (global, single instance) ----------
-const openFileInput = document.createElement("input");
-openFileInput.type = "file";
-openFileInput.multiple = true;
-openFileInput.style.display = "none";
-document.body.appendChild(openFileInput);
-
-
-
-  const actions = document.createElement("div");
-  actions.style.marginLeft = "auto";
-  actions.className = "file-actions";
-
-  const input = document.createElement("input");
-  input.id = "newFileName";
-  input.className = "file-input";
-  input.placeholder = "new-file.ext";
-
-  const addBtn = document.createElement("button");
-  addBtn.id = "btnNewFile";
-  addBtn.className = "btn";
-  addBtn.textContent = "Add File";
-  addBtn.addEventListener("click", () => {
-    const name = input.value.trim();
-    if (!name) return alert("Enter a filename");
-    if (files.some((f) => f.filename === name)) return alert("File exists");
-    socket.emit("create_file", {
-      projectName: project,
-      language: language,
-      filename: name,
-      code: ""
-    });
-    input.value = "";
-  });
-
-  const delBtn = document.createElement("button");
-  delBtn.className = "btn";
-  delBtn.style.background = "#e74c3c";
-  delBtn.textContent = "Delete File";
-  delBtn.addEventListener("click", () => {
-  if (!currentFile) return alert("Select file first");
-  if (!confirm("Delete " + currentFile + " ?")) return;
-
-  const deletedFile = currentFile;
-
-  socket.emit("delete_file", {
-    projectName: project,
-    language: language,
-    filename: deletedFile
-  });
-
-  // 🔥 REMOVE LOCALLY
-  files = files.filter(f => f.filename !== deletedFile);
-  currentFile = null;
-
-  // 🔥 CLEAR MONACO EDITOR
-  const emptyModel = monaco.editor.createModel("", "plaintext");
-  editor.setModel(emptyModel);
-
-  renderTabs();
-});
-
-
-  // ---- OPEN FILE BUTTON ----
-const openBtn = document.createElement("button");
-openBtn.className = "btn";
-openBtn.textContent = "Open File";
-
-openBtn.addEventListener("click", () => {
-  openFileInput.click();
-});
-
-// ---- HANDLE FILE SELECTION ----
-openFileInput.onchange = (e) => {
-  const selectedFiles = Array.from(e.target.files);
-  if (!selectedFiles.length) return;
-
-  selectedFiles.forEach((file) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const content = reader.result;
-      const filename = file.name;
-
-      // Prevent duplicates
-      if (files.some((f) => f.filename === filename)) {
-        selectFile(filename);
-        return;
-      }
-
-      // Add file locally
-      files.push({ filename, code: content });
-
-      // Sync with collaborators
-      socket.emit("create_file", {
-        projectName: project,
-        language: language,
-        filename: filename,
-        code: content
-      });
-
-      renderTabs();
-      selectFile(filename);
-    };
-
-    reader.readAsText(file);
-  });
-
-  openFileInput.value = "";
-};
-
-// ---- APPEND ACTIONS ----
-actions.appendChild(input);
-actions.appendChild(addBtn);
-actions.appendChild(openBtn);   // ✅ Open File
-actions.appendChild(delBtn);
-tabsBar.appendChild(actions);
-
 
   Array.from(tabsBar.querySelectorAll(".tab")).forEach((tab) => {
     tab.classList.toggle("active", tab.dataset.filename === currentFile);
@@ -637,6 +390,7 @@ function detectModeFromFilename(filename) {
   return map[ext] || "plaintext";
 }
 
+
 // -------------------------
 // SHARE FILE TO CHATBOT
 // -------------------------
@@ -677,6 +431,7 @@ async function shareFile() {
     alert("Error sharing file: " + err.toString());
   }
 }
+
 
 // -------------------------
 // RUN CODE
@@ -734,20 +489,6 @@ ${jsFile ? `<script>${jsFile.code}<\/script>` : ""}
     if (result.error) {
       outputArea.textContent =
         "❌ " + result.error + "\n\n" + (result.detail || "");
-
-      if (result.line) {
-        editor.deltaDecorations([], [
-          {
-            range: new monaco.Range(result.line, 1, result.line, 1),
-            options: {
-              isWholeLine: true,
-              className: "errorLineHighlight"
-            }
-          }
-        ]);
-      }
-
-      getAIExplanation(result.error, result.line);
       return;
     }
 
@@ -756,52 +497,4 @@ ${jsFile ? `<script>${jsFile.code}<\/script>` : ""}
   } catch (err) {
     outputArea.textContent = "Run failed: " + err.toString();
   }
-
-  async function getAIExplanation(errorMessage, line) {
-    const box = document.getElementById("aiExplanation");
-    box.style.display = "block";
-    box.innerHTML = "<b>Analyzing error…</b>";
-
-    const payload = {
-      error: errorMessage,
-      line: line,
-      code: editor.getValue()
-    };
-
-    const res = await fetch("/api/explain_error", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await res.json();
-
-    box.innerHTML = `
-        <b>🔍 Error Explanation:</b><br>${result.explanation}<br><br>
-        <b>🛠 Suggested Fix:</b><br>${result.fix}
-    `;
-  }
 }
-// 📌 Initialize Package UI after DOM loads
-window.addEventListener("load", () => {
-
-  if (!pkgLangSelect || !pkgSelect) {
-    console.warn("Package Manager UI not found");
-    return;
-  }
-
-  // Auto-select project language if exists in dropdown
-  const hasOption = Array.from(pkgLangSelect.options)
-      .some(opt => opt.value.toLowerCase() === language);
-  if (hasOption) pkgLangSelect.value = language;
-
-  updatePackageDropdown();
-  refreshInstalledPackages();
-
-  // ensure on-change works
-  pkgLangSelect.addEventListener("change", () => {
-    updatePackageDropdown();
-    refreshInstalledPackages();
-  });
-});
-
