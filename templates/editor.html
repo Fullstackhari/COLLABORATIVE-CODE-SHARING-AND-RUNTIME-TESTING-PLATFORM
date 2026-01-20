@@ -6,12 +6,13 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
+
+  <!-- ✅ Monaco require.config updated to match version 0.43.0 -->
   <script>
-  require.config({
-    paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor/min/vs" }
-  });
-</script>
+    require.config({
+      paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs" }
+    });
+  </script>
 
   <style>
   /* Global dark layout */
@@ -168,7 +169,7 @@
     outline: none;
 
     /* smooth animation */
-    transition: 
+    transition:
         background 0.25s ease,
         transform 0.25s ease,
         box-shadow 0.25s ease;
@@ -206,13 +207,10 @@
         transform 0.25s ease,
         box-shadow 0.25s ease;
 }
-
-
-</style>
+  </style>
 
 </head>
 <body class="editor-screen">
-
 
 <!-- ░░░ TOP BAR ░░░ -->
 <div class="top-bar">
@@ -222,8 +220,7 @@
     <strong>Lang:</strong> {{ language|upper }}
   </div>
 
-   <div style="display:flex; gap:10px; align-items:center;">
-
+  <div style="display:flex; gap:10px; align-items:center;">
     <a href="/editor-home/{{ projectName }}/{{ usn }}">
       <button class="editor-btn">Change Language</button>
     </a>
@@ -235,9 +232,7 @@
     <a href="/">
       <button class="editor-btn">Logout</button>
     </a>
-
   </div>
-
 </div>
 
 <!-- ░░░ MAIN EDITOR LAYOUT ░░░ -->
@@ -246,29 +241,27 @@
 
     <!-- TABS BAR -->
     <div class="tabs" id="tabsBar">
-  <div class="file-actions">
+      <div class="file-actions">
 
-    <input id="newFileName" class="file-input" placeholder="new-file.py" />
+        <input id="newFileName" class="file-input" placeholder="new-file.py" />
 
-    <button id="btnNewFile" class="btn">Add File</button>
+        <button id="btnNewFile" class="btn">Add File</button>
 
-    <!-- ✅ OPEN FILE BUTTON (beside Add File) -->
-    <button id="openFileBtn" class="btn">Open File</button>
+        <!-- ✅ OPEN FILE BUTTON (beside Add File) -->
+        <button id="openFileBtn" class="btn">Open File</button>
 
-    <button id="btnDeleteFile" class="btn danger">Delete File</button>
+        <button id="btnDeleteFile" class="btn danger">Delete File</button>
 
-    <!-- ✅ Hidden file picker -->
-    <input
-      type="file"
-      id="openFileInput"
-      style="display:none"
-      multiple
-    />
+        <!-- ✅ Hidden file picker -->
+        <input
+          type="file"
+          id="openFileInput"
+          style="display:none"
+          multiple
+        />
 
-  </div>
-</div>
-
-
+      </div>
+    </div>
 
     <!-- Monaco Editor -->
     <div id="editor"></div>
@@ -280,8 +273,6 @@
       <div class="controls">
         <button id="btnRun" class="btn">Run ▶</button>
         <button id="btnShare" class="btn" style="background:#3498db;">Share 📤</button>
-
-
       </div>
     </div>
 
@@ -289,73 +280,70 @@
          style="margin-top:12px; font-family:monospace; white-space:pre-wrap; background:#fafafa; padding:12px; height:120px; overflow:auto;">
       Output panel
     </div>
+
     <div id="packageManager" class="panel">
-  <h3>📦 Packages Manager</h3>
-  <label>Language</label>
-  <select id="pkgLang">
-    <option value="python">Python</option>
-    <option value="javascript">JavaScript</option>
-    <option value="java">Java</option>
-    <option value="c">C</option>
-    <option value="cpp">C++</option>
-    <option value="ruby">Ruby</option>
-    <option value="nosql">NoSQL</option>
-    <option value="react">React</option>
-  </select>
+      <h3>📦 Packages Manager</h3>
+      <label>Language</label>
+      <select id="pkgLang">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="ruby">Ruby</option>
+        <option value="nosql">NoSQL</option>
+        <option value="react">React</option>
+      </select>
 
-  <label>Package Name</label>
-  <select id="pkgSelect"></select>
+      <label>Package Name</label>
+      <select id="pkgSelect"></select>
 
-  <button id="btnInstallPkg">Install</button>
+      <button id="btnInstallPkg">Install</button>
 
-  <h4>Installed Packages</h4>
-  <ul id="installedPkgs"></ul>
-</div>
+      <h4>Installed Packages</h4>
+      <ul id="installedPkgs"></ul>
+    </div>
 
-</div>
-
-<style>
-#packageManager {
-    border-top: 1px solid #141212;
-    padding: 10px;
-    margin-top: 10px;
-    font-size: 13px;
-    color: #eee;
-}
-#packageManager input, #packageManager select {
-    width: 100%;
-    margin: 4px 0;
-    padding: 6px;
-}
-#packageManager button {
-    width: 100%;
-    padding: 6px;
-    margin-top: 6px;
-    background: #00a8ff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-#packageManager button:hover {
-    background: #007acc;
-}
-#installedPkgs {
-    list-style: none;
-    padding-left: 0;
-    max-height: 150px;
-    overflow-y: auto;
-}
-#installedPkgs li {
-    padding: 4px;
-    border-bottom: 1px solid #555;
-
-}
-.terminal-bar {
-    display: none !important;
-}
-
-</style>
+    <style>
+      #packageManager {
+          border-top: 1px solid #141212;
+          padding: 10px;
+          margin-top: 10px;
+          font-size: 13px;
+          color: #eee;
+      }
+      #packageManager input, #packageManager select {
+          width: 100%;
+          margin: 4px 0;
+          padding: 6px;
+      }
+      #packageManager button {
+          width: 100%;
+          padding: 6px;
+          margin-top: 6px;
+          background: #00a8ff;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+      }
+      #packageManager button:hover {
+          background: #007acc;
+      }
+      #installedPkgs {
+          list-style: none;
+          padding-left: 0;
+          max-height: 150px;
+          overflow-y: auto;
+      }
+      #installedPkgs li {
+          padding: 4px;
+          border-bottom: 1px solid #555;
+      }
+      .terminal-bar {
+          display: none !important;
+      }
+    </style>
 
     <div class="terminal-bar">
       <input id="terminalInput" placeholder="> pip install pandas" />
@@ -363,10 +351,9 @@
     </div>
 
     <div id="aiExplanation"
-     style="margin-top:12px; padding:12px; background:#fff3e0; border-radius:8px;
-            border:1px solid #ffcc80; font-family:sans-serif; display:none;">
+         style="margin-top:12px; padding:12px; background:#fff3e0; border-radius:8px;
+                border:1px solid #ffcc80; font-family:sans-serif; display:none;">
     </div>
-
 
     <iframe id="preview" class="preview-frame" style="display:none;"></iframe>
 
@@ -382,6 +369,7 @@
   window.USER = "{{ usn }}";
   window.LANGUAGE = "{{ language }}";
 </script>
+
 <script>
  window.MonacoEnvironment = {
   getWorkerUrl: function (_, label) {
@@ -396,9 +384,11 @@
 };
 </script>
 
+<!-- ✅ Monaco loader included ONLY ONCE (faster) -->
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs/loader.js"></script>
-<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
 
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
 <script src="/static/js/monaco/lsp/lsp-init.js" type="module"></script>
+
 </body>
 </html>
